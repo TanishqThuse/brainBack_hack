@@ -459,6 +459,82 @@ body {
 }
 .debug-panel.visible { display: block; }
 
+/* ── Welcome Overlay ───────────────────────────────────────── */
+.welcome-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(6, 14, 30, 0.85);
+  backdrop-filter: blur(24px);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+}
+.welcome-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 40px 50px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 207, 238, 0.15);
+  max-width: 480px; width: 90%;
+  animation: msg-in 0.4s ease;
+}
+.welcome-brand { margin-bottom: 24px; }
+.welcome-logo {
+  width: 64px; height: 64px; margin: 0 auto 12px;
+  border-radius: 16px;
+  background: linear-gradient(140deg, var(--blue) 0%, var(--cyan) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  box-shadow: 0 4px 18px rgba(0,207,238,0.28);
+}
+.welcome-title { font-size: 24px; font-weight: 800; }
+.welcome-title em { font-style: normal; color: var(--cyan); }
+.welcome-subtitle { font-size: 12px; color: var(--muted); letter-spacing: 1.6px; text-transform: uppercase; margin-top: 4px; }
+.welcome-card h2 { font-size: 16px; color: var(--muted); margin-bottom: 24px; font-weight: 600; }
+.welcome-buttons { display: flex; gap: 16px; justify-content: center; }
+.btn-lang {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, rgba(21,101,232,0.1) 0%, rgba(0,207,238,0.1) 100%);
+  border: 1px solid rgba(0,207,238,0.4);
+  border-radius: var(--radius-lg);
+  color: var(--white);
+  font-family: var(--font); font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-lang:hover {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,207,238,0.3);
+}
+
+/* ── Exit Prompt ───────────────────────────────────────────── */
+.exit-prompt {
+  width: 100%;
+  padding: 14px 22px;
+  background: rgba(242, 161, 21, 0.08);
+  border: 1px solid rgba(242, 161, 21, 0.2);
+  border-radius: var(--radius-lg);
+  display: none;
+  flex-direction: column; align-items: center; gap: 12px;
+  animation: msg-in 0.3s ease;
+}
+.exit-prompt.visible { display: flex; }
+.exit-msg { font-size: 14px; font-weight: 600; color: var(--gold); }
+.exit-actions { display: flex; gap: 12px; }
+.btn-exit {
+  padding: 8px 18px; border-radius: var(--radius-sm);
+  background: rgba(255, 68, 68, 0.15); border: 1px solid rgba(255, 68, 68, 0.4);
+  color: #FF8080; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-exit:hover { background: var(--red); color: #fff; border-color: var(--red); }
+.btn-continue {
+  padding: 8px 18px; border-radius: var(--radius-sm);
+  background: rgba(0, 222, 112, 0.15); border: 1px solid rgba(0, 222, 112, 0.4);
+  color: var(--green); font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-continue:hover { background: var(--green); color: #000; border-color: var(--green); }
+
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .greeting h1         { font-size: 20px; }

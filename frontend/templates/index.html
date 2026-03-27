@@ -20,7 +20,23 @@
   <div class="bg-radial" aria-hidden="true"></div>
   <div class="bg-grid"   aria-hidden="true"></div>
 
-  <main class="page">
+  <!-- ── WELCOME OVERLAY ───────────────────────────────────── -->
+  <div id="welcome-overlay" class="welcome-overlay">
+    <div class="welcome-card">
+      <div class="welcome-brand">
+        <div class="welcome-logo">🏦</div>
+        <div class="welcome-title">Brain<em>Back</em>.AI</div>
+        <div class="welcome-subtitle">Voice Banking Assistant</div>
+      </div>
+      <h2>Tap to Start &nbsp;•&nbsp; शुरू करने के लिए टैप करें</h2>
+      <div class="welcome-buttons">
+        <button class="btn-lang" onclick="startSession('en')">🇬🇧 English</button>
+        <button class="btn-lang" onclick="startSession('hi')">🇮🇳 हिंदी</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="page" id="main-ui" style="display: none;">
 
     <!-- ── HEADER ──────────────────────────────────────────── -->
     <header class="header">
@@ -92,6 +108,15 @@
       </div>
 
       <div class="divider" aria-hidden="true"></div>
+
+      <!-- Exit Prompt Banner -->
+      <div id="exit-prompt" class="exit-prompt">
+        <div class="exit-msg">Any more questions? &nbsp;•&nbsp; कोई और सवाल?</div>
+        <div class="exit-actions">
+          <button class="btn-exit" onclick="endSession()">🛑 No, Exit</button>
+          <button class="btn-continue" onclick="hideExitPrompt()">🎤 Yes, Ask</button>
+        </div>
+      </div>
 
       <!-- Voice controls -->
       <div class="voice-controls">
