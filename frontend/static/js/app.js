@@ -30,6 +30,7 @@ const STATE = {
   rafId:       null,
   turns:       0,
   langOverride:"auto",
+  exitPromptTimer: null,
 };
 
 
@@ -250,12 +251,22 @@ const ResponseHandler = (() => {
       UI.showTellerAlert(data.bot_text);
     }
 
+    const showPromptLater = () => {
+      if (data.action !== "teller_alert" && data.action !== "no_speech") {
+        clearTimeout(STATE.exitPromptTimer);
+        STATE.exitPromptTimer = setTimeout(() => {
+          document.getElementById('exit-prompt').classList.add('visible');
+        }, 5000);
+      }
+    };
+
     // Play TTS audio
     if (data.audio_b64) {
       const fmt    = data.audio_format || "wav";
       const player = document.getElementById("audio-player");
       player.src   = `data:audio/${fmt};base64,${data.audio_b64}`;
-      player.play().catch(() => {});  // autoplay may be blocked — silent fail
+      player.onended = showPromptLater;
+      player.play().catch(() => { showPromptLater(); });  // autoplay may be blocked — silent fail
     } else if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(data.bot_text);
@@ -268,7 +279,11 @@ const ResponseHandler = (() => {
       const matchVoice = voices.find(v => v.lang.startsWith(targetLang));
       if (matchVoice) utterance.voice = matchVoice;
       
+      utterance.onend = showPromptLater;
+      utterance.onerror = showPromptLater;
       window.speechSynthesis.speak(utterance);
+    } else {
+      showPromptLater();
     }
 
     // Update debug panel
@@ -282,11 +297,6 @@ const ResponseHandler = (() => {
       latency_s:    data.latency_s,
       ctx_preview:  (data.context_used || "").slice(0, 250) + "…",
     }, null, 2);
-
-    // Show exit prompt if it was a valid turn
-    if (data.action !== "no_speech") {
-      document.getElementById('exit-prompt').classList.add('visible');
-    }
   }
 
   return { handle };
@@ -462,10 +472,12 @@ window.endSession = async function() {
 
 window.hideExitPrompt = function() {
   document.getElementById('exit-prompt').classList.remove('visible');
+  clearTimeout(STATE.exitPromptTimer);
 };
 
 window.toggleMic = function () {
   if (STATE.processing) return;
+  window.hideExitPrompt();
   STATE.recording ? Recorder.stop() : Recorder.start();
 };
 
@@ -482,6 +494,7 @@ window.toggleLanguageOverride = function() {
 };
 
 window.askSample = function (text) {
+  window.hideExitPrompt();
   // Show user message immediately, then query
   UI.addMessage("user", text, null, false);
   API.sendText(text);
@@ -493,6 +506,7 @@ window.submitTextQuery = function () {
   const text = inputEl.value.trim();
   if (!text) return;
 
+  window.hideExitPrompt();
   inputEl.value = "";
   // Show user message immediately, then query
   UI.addMessage("user", text, null, false);
