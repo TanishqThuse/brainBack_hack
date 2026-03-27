@@ -51,14 +51,14 @@ class Settings:
     TTS_ENABLE_CACHE = True        # cache rendered WAV files to disk
     TTS_ENGINE       = "elite"     # elite (Sherpa-ONNX) | basic (pyttsx3)
     
-    # Elite TTS Model Paths (relative to BASE_DIR/data/models)
+    # Elite TTS: Maps language code -> extracted model FOLDER name
+    # Each folder contains: model.onnx + tokens.txt
     TTS_MODEL_DIR    = BASE_DIR / "data" / "models" / "tts"
     TTS_MODELS = {
-        "en": "vits-vctk-en-piper-low.onnx", # High quality English
-        "hi": "vits-indic-hindi-female.onnx", # High quality Hindi
-        "mr": "vits-indic-marathi-female.onnx" # High quality Marathi
+        "en": "vits-piper-en_US-amy-low",    # English: ~22 MB
+        "hi": "vits-piper-hi-0-madmom-low",  # Hindi:   ~22 MB
     }
-    TTS_TOKENS = "tokens.txt" # Shared tokens for Indic models
+    TTS_TOKENS = "tokens.txt" # standard filename inside each model folder
 
     # ── RAG (ChromaDB + sentence-transformers) ────────────────
     EMBED_MODEL   = "all-MiniLM-L6-v2"

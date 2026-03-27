@@ -507,6 +507,12 @@ window.toggleDebug = function () {
 /* ─────────────────────────────────────────────────────────────
    9. SPA VIEW TOGGLING & DASHBOARD LOGIC
    ───────────────────────────────────────────────────────────── */
+
+// Safe HTML escaping for global scope (UI.escHtml is only in its closure)
+function _esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
 window.switchView = function(viewId) {
   document.querySelectorAll(".view").forEach(el => el.classList.remove("active"));
   document.getElementById(viewId).classList.add("active");
@@ -533,7 +539,7 @@ window.updateRAGVisualizer = function(replyText, conf, pctScore) {
         <span class="chunk-lbl">RAG NODE HIT</span>
         <span class="chunk-score">SIMILARITY: ${similarity}%</span>
       </div>
-      <div class="chunk-text">${API.esc(chunkText)}</div>
+      <div class="chunk-text">${_esc(chunkText)}</div>
     </div>
   `;
   panel.insertAdjacentHTML('afterbegin', chunkHtml);
@@ -548,7 +554,7 @@ window.updateDashboardFeed = function(role, text) {
   
   const logHtml = `
     <div class="dash-log">
-      <span class="dash-log-time">${time}</span> ${roleLabel} <span>${API.esc(text)}</span>
+      <span class="dash-log-time">${time}</span> ${roleLabel} <span>${_esc(text)}</span>
     </div>
   `;
   feed.insertAdjacentHTML('beforeend', logHtml);

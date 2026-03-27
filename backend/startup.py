@@ -61,15 +61,32 @@ def run_startup_checks(cfg) -> None:
 
     # ── 4. TTS ────────────────────────────────────────────────
     print("  [4/5] Initialising TTS...", end=" ", flush=True)
+    tts = None
     if cfg.TTS_ENGINE == "elite":
-        tts = EliteTTSEngine(cfg)
-        engine_name = "Sherpa-ONNX (Elite)"
+        elite = EliteTTSEngine(cfg)
+        try:
+            elite.load()
+        except Exception:
+            pass
+        
+        if elite._models:
+            # At least one language model loaded ✅
+            tts = elite
+            engine_name = f"Sherpa-ONNX Elite ({list(elite._models.keys())})"
+        else:
+            # No models downloaded → fallback silently to pyttsx3
+            print("\n  [4/5] ⚠️  Elite TTS models not found → falling back to pyttsx3", flush=True)
+            print("         └─ Run: py scripts/download_elite_models.py  (to get HD voices)", flush=True)
+            print("  [4/5]", end=" ", flush=True)
+            tts = TTSEngine(cfg)
+            engine_name = "pyttsx3 (Fallback)"
     else:
         tts = TTSEngine(cfg)
         engine_name = "pyttsx3 (Basic)"
-        
+
     try:
-        tts.load()
+        if not hasattr(tts, "_models"):  # basic TTSEngine needs load()
+            tts.load()
         print(f"✅  ({engine_name})")
     except Exception as e:
         print(f"⚠️   ({e})")   # TTS failure is non-fatal

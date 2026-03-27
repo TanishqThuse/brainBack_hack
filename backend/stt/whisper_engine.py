@@ -94,8 +94,11 @@ class WhisperEngine:
                         # Overwrite temp file with clean audio
                         sf.write(tmp_path, reduced_noise, samplerate)
                         print(f"\033[93m    [STT] Denoising applied (Elite Mode)\033[0m")
+                except FileNotFoundError:
+                    # ffmpeg not in PATH — denoising silently skipped, Whisper still works fine
+                    log.debug("ffmpeg not found — denoising skipped (install ffmpeg to enable)")
                 except Exception as de:
-                    log.warning("Denoising failed: %s (Ensure ffmpeg is in PATH for WebM support)", de)
+                    log.debug("Denoising skipped: %s", de)
 
             segments, info = self.model.transcribe(
                 tmp_path,
