@@ -1,0 +1,23 @@
+# BrainBack.AI — BankBot (Fully Offline)
+# Install: pip install -r requirements.txt
+#
+# System deps (install before pip):
+#   Ubuntu/Debian : sudo apt install ffmpeg espeak-ng espeak-ng-data
+#   macOS         : brew install ffmpeg espeak
+#   Windows       : pyttsx3 uses SAPI5 natively — ffmpeg from ffmpeg.org
+
+flask==3.0.3
+faster-whisper==1.0.3
+sentence-transformers==3.0.1
+faiss-cpu==1.8.0
+pyttsx3==2.99
+numpy==1.26.4
+soundfile==0.12.1
+
+# ── LLM: Ollama is a standalone binary, not a pip package.
+# Install separately:
+#   Linux/Mac : curl -fsSL https://ollama.com/install.sh | sh
+#   Windows   : https://ollama.com/download
+# Then pull a model (once, needs internet):
+#   ollama pull phi3:mini      # 2.3 GB — recommended
+#   ollama pull gemma2:2b      # 1.6 GB — lighter alternative
