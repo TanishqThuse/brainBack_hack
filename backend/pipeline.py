@@ -463,6 +463,13 @@ class VoicePipeline:
                     user_text=corrected_text,
                     history=session.get_history_dicts(self.cfg.SESSION_MAX_TURNS),
                 )
+                
+                # Append standard "Any more questions?" prompt
+                if active_lang == "hi":
+                    bot_text += " क्या आपके पास कोई और सवाल है?"
+                else:
+                    bot_text += " Do you have any other questions?"
+                    
                 print(f"\033[92m[3/4] LLM Response: '{bot_text}'\033[0m")
                 action      = "answer"
                 context_out = rag_result.context
