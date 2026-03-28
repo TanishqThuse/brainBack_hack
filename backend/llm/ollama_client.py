@@ -106,7 +106,7 @@ class OllamaClient:
             "stream":  False,
             "options": {
                 "num_ctx":        1024,   # Enough to hold system prompt + RAG context
-                "num_predict":    150,    # Enough for 2-3 complete sentences
+                "num_predict":    100,    # Keep shorter to avoid phi3:mini 500 errors
                 "num_thread":     8,      # Use all CPU cores
                 "temperature":    self.cfg.LLM_TEMPERATURE,
                 "top_p":          self.cfg.LLM_TOP_P,

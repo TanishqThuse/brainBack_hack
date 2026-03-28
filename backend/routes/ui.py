@@ -12,3 +12,15 @@ ui_bp = Blueprint("ui", __name__)
 @ui_bp.route("/")
 def index():
     return render_template("index.html")
+
+
+@ui_bp.route("/sbi")
+def sbi_clone():
+    """Serves the SBI landing page clone."""
+    return render_template("sbi_clone.html")
+
+
+@ui_bp.route("/widget")
+def widget():
+    """Serves the minimalist chatbot widget (used by iframe)."""
+    return render_template("widget.html")

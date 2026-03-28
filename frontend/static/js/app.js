@@ -135,7 +135,8 @@ const Recorder = (() => {
     UI.setRecordingState(true);
     Visualiser.start(STATE.stream);
     UI.setLabel("🔴 Recording… tap to stop", "active");
-    document.getElementById("teller-alert").classList.remove("visible");
+    const ta = document.getElementById("teller-alert");
+    if (ta) ta.classList.remove("visible");
   }
 
   function stop() {
@@ -287,7 +288,8 @@ const ResponseHandler = (() => {
       if (data.action !== "teller_alert" && data.action !== "no_speech") {
         clearTimeout(STATE.exitPromptTimer);
         STATE.exitPromptTimer = setTimeout(() => {
-          document.getElementById('exit-prompt').classList.add('visible');
+          const ep = document.getElementById('exit-prompt');
+          if (ep) ep.classList.add('visible');
         }, 5000);
       }
     };
@@ -316,7 +318,8 @@ const ResponseHandler = (() => {
     }
 
     // Update debug panel
-    document.getElementById("debug-panel").textContent = JSON.stringify(
+    const debugEl = document.getElementById("debug-panel");
+    if (debugEl) debugEl.textContent = JSON.stringify(
       {
         user_text: data.user_text,
         bot_text: data.bot_text,
@@ -413,6 +416,7 @@ const UI = (() => {
   function showTellerAlert(msg) {
     const el = document.getElementById("teller-alert");
     const body = document.getElementById("teller-msg");
+    if (!el || !body) return;
     body.textContent = msg;
     el.classList.add("visible");
     setTimeout(() => el.classList.remove("visible"), 14000);
@@ -420,18 +424,21 @@ const UI = (() => {
 
   function setRecordingState(recording) {
     const btn = document.getElementById("mic-btn");
-    btn.classList.toggle("recording", recording);
+    if (btn) btn.classList.toggle("recording", recording);
     ["mic-ring-1", "mic-ring-2", "mic-ring-3"].forEach((id) => {
-      document.getElementById(id).classList.toggle("off", !recording);
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle("off", !recording);
     });
   }
 
   function setProcessing(processing) {
     STATE.processing = processing;
     const btn = document.getElementById("mic-btn");
-    btn.classList.toggle("processing", processing);
-    btn.disabled = processing;
-    btn.textContent = processing ? "⏳" : "🎙️";
+    if (btn) {
+      btn.classList.toggle("processing", processing);
+      btn.disabled = processing;
+      btn.textContent = processing ? "⏳" : "🎙️";
+    }
 
     const chatInput = document.getElementById("chat-input");
     const sendBtn = document.getElementById("send-btn");
@@ -441,15 +448,20 @@ const UI = (() => {
 
   function setLabel(html, type) {
     const el = document.getElementById("mic-label");
+    if (!el) return;
     el.innerHTML = html;
     el.className = `mic-label${type ? " " + type : ""}`;
   }
 
   function updateStats({ turns, conf, lang, latency }) {
-    document.getElementById("stat-turns").textContent = turns;
-    document.getElementById("stat-conf").textContent = conf;
-    document.getElementById("stat-lang").textContent = lang;
-    document.getElementById("stat-latency").textContent = latency;
+    const sTurns = document.getElementById("stat-turns");
+    const sConf = document.getElementById("stat-conf");
+    const sLang = document.getElementById("stat-lang");
+    const sLat = document.getElementById("stat-latency");
+    if (sTurns) sTurns.textContent = turns;
+    if (sConf) sConf.textContent = conf;
+    if (sLang) sLang.textContent = lang;
+    if (sLat) sLat.textContent = latency;
   }
 
   return {
@@ -509,8 +521,10 @@ window.startSession = function(lang) {
   STATE.langOverride = lang;
   STATE.turns = 0;
   
-  document.getElementById('welcome-overlay').style.display = 'none';
-  document.getElementById('main-ui').style.display = 'flex';
+  const overlay = document.getElementById('welcome-overlay');
+  const mainUi = document.getElementById('main-ui');
+  if (overlay) overlay.style.display = 'none';
+  if (mainUi) mainUi.style.display = 'flex';
   
   const modes = [
     { id: "auto", label: "🌐 Auto-Detect" },
@@ -529,7 +543,8 @@ window.endSession = async function() {
 };
 
 window.hideExitPrompt = function() {
-  document.getElementById('exit-prompt').classList.remove('visible');
+  const ep = document.getElementById('exit-prompt');
+  if (ep) ep.classList.remove('visible');
   clearTimeout(STATE.exitPromptTimer);
 };
 

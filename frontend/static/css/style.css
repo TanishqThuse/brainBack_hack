@@ -601,7 +601,19 @@ body {
   background: var(--panel); border: 1px solid var(--border);
   border-radius: var(--radius-xl); padding: 24px;
 }
-.dash-card h3 { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;}
+.dash-card h3 { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+/* ── WIDGET MODE ADJUSTMENTS ────────────────────────────────── */
+@media (max-width: 450px) {
+  .conversation { padding: 12px; gap: 10px; }
+  .bubble { max-width: 85%; }
+  .stat-card { padding: 6px; }
+  .stat-value { font-size: 14px; }
+  .msg-meta { font-size: 9px; }
+  .model-bar { font-size: 10px; }
+  .mt-lbl { display: none; } /* Hide labels on tiny widths */
+}
+
 .dash-stats { display: flex; gap: 16px; }
 .dash-stat { flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: var(--radius-md); text-align: center; }
 .d-val { display: block; font-size: 28px; font-weight: 800; color: var(--cyan); margin-bottom: 4px; }

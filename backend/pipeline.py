@@ -496,9 +496,17 @@ class VoicePipeline:
                 session.add_turn(user_text, bot_text)
             except Exception as e:
                 log.error("LLM error: %s", e)
-                bot_text    = FALLBACK_MESSAGES.get(lang, FALLBACK_MESSAGES["en"])
-                action      = "teller_alert"
-                context_out = ""
+                print(f"\033[91m    [LLM] Error — falling back to RAG context directly\033[0m")
+                # Use RAG context directly as the answer instead of teller fallback
+                if rag_result and rag_result.context:
+                    bot_text    = rag_result.context.split('\n')[0]  # Top RAG doc
+                    action      = "answer"
+                    context_out = rag_result.context
+                    session.add_turn(user_text, bot_text)
+                else:
+                    bot_text    = FALLBACK_MESSAGES.get(lang, FALLBACK_MESSAGES["en"])
+                    action      = "teller_alert"
+                    context_out = ""
 
         # 5. TTS
         print("\033[95m[4/4] Bypassing Python Audio Compression -> Transferring to Browser TTS\033[0m")
