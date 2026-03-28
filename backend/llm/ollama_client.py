@@ -105,8 +105,8 @@ class OllamaClient:
             "messages": messages,
             "stream":  False,
             "options": {
-                "num_ctx":        512,    # Reduced from 1024 — biggest speed lever
-                "num_predict":    35,     # Ultra-short answers = ultra-fast
+                "num_ctx":        1024,   # Enough to hold system prompt + RAG context
+                "num_predict":    150,    # Enough for 2-3 complete sentences
                 "num_thread":     8,      # Use all CPU cores
                 "temperature":    self.cfg.LLM_TEMPERATURE,
                 "top_p":          self.cfg.LLM_TOP_P,

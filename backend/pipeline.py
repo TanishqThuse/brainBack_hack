@@ -205,51 +205,70 @@ FAST_PATH_CACHE = {
 }
 
 # ── Fuzzy Cache Match: keywords for each cache key ────────────────
+# NOTE: Avoid generic single words ("open", "time", "rate", "score", etc.)
+# that can match unrelated queries. Prefer multi-word phrases.
+# Each entry has "strong" keywords (1 match = hit) and "weak" keywords (need 2+ matches).
 FAST_PATH_KEYWORDS = {
-    "fd interest rate": ["fd", "fixed deposit", "interest rate", "faida", "byaj"],
-    "savings account": ["savings", "saving account", "bachat", "open account"],
-    "atm card block": ["atm", "card block", "debit card", "card band", "card lost"],
-    "branch timing": ["branch", "timing", "time", "open", "shaka", "samay"],
-    "home loan": ["home loan", "ghar", "housing", "property loan", "house"],
-    "jan dhan": ["jan dhan", "jandhan", "jandan", "zero balance", "pradhan"],
-    "gold loan": ["gold", "sona", "jewellery", "ornament"],
-    "mudra loan": ["mudra", "business loan", "startup", "vyapar"],
-    "kyc": ["kyc", "know your customer", "update kyc", "kyc karna"],
-    "personal loan": ["personal loan", "niji loan", "urgent loan"],
-    "education loan": ["education", "study loan", "college", "university", "padhai"],
-    "cibil score": ["cibil", "credit score", "score", "credit report"],
-    "upi": ["upi", "google pay", "phonepe", "bhim", "payment", "transfer"],
-    "neft rtgs": ["neft", "rtgs", "wire transfer", "bank transfer"],
-    "sukanya samriddhi": ["sukanya", "girl child", "beti", "ladki"],
-    "ppf": ["ppf", "public provident", "tax saving", "bachat yojana"],
-    "locker": ["locker", "safe deposit", "tijori"],
-    "cheque book": ["cheque", "check book", "chequebook"],
-    "recurring deposit": ["rd", "recurring", "monthly deposit", "masik"],
-    "current account": ["current account", "business account", "overdraft"],
-    "net banking": ["net banking", "internet banking", "online banking", "mobile banking"],
-    "interest rate": ["interest", "rate", "byaj", "dar", "faida"],
-    "complaint": ["complaint", "problem", "issue", "shikayat", "grievance"],
-    "balance": ["balance", "kitna", "bakiya", "check balance", "account mein"],
-    "loan eligibility": ["eligible", "eligibility", "qualify", "yogya"],
-    "pm vishwakarma": ["vishwakarma", "artisan", "karigar"],
-    "atal pension": ["atal pension", "pension", "pension yojana", "retirement"],
-    "kisan credit card": ["kisan", "farmer", "kcc", "kisaan", "agriculture"],
-    "nri account": ["nri", "nre", "nro", "foreign", "abroad", "overseas"],
-    "minimum balance": ["minimum balance", "min balance", "nyuntam"],
+    "fd interest rate": {"strong": ["fixed deposit", "fd interest", "fd rate"], "weak": ["fd", "byaj"]},
+    "savings account": {"strong": ["savings account", "saving account", "bachat khata"], "weak": ["savings", "bachat"]},
+    "atm card block": {"strong": ["atm card", "card block", "debit card block", "card lost", "card band"], "weak": ["atm"]},
+    "branch timing": {"strong": ["branch timing", "branch hours", "bank timing", "branch time", "shaka samay"], "weak": ["branch", "shaka"]},
+    "home loan": {"strong": ["home loan", "housing loan", "property loan", "ghar loan"], "weak": ["housing"]},
+    "jan dhan": {"strong": ["jan dhan", "jandhan", "jandan", "zero balance account"], "weak": ["pradhan mantri"]},
+    "gold loan": {"strong": ["gold loan", "sona loan"], "weak": ["gold", "sona"]},
+    "mudra loan": {"strong": ["mudra loan", "mudra", "business loan"], "weak": ["vyapar", "startup"]},
+    "kyc": {"strong": ["kyc", "know your customer", "update kyc", "kyc karna"], "weak": []},
+    "personal loan": {"strong": ["personal loan", "niji loan", "urgent loan"], "weak": []},
+    "education loan": {"strong": ["education loan", "study loan"], "weak": ["college loan", "university loan", "padhai"]},
+    "cibil score": {"strong": ["cibil", "credit score", "credit report"], "weak": []},
+    "upi": {"strong": ["upi", "google pay", "phonepe", "bhim"], "weak": []},
+    "neft rtgs": {"strong": ["neft", "rtgs", "wire transfer", "bank transfer"], "weak": []},
+    "sukanya samriddhi": {"strong": ["sukanya", "sukanya samriddhi", "girl child scheme"], "weak": ["beti", "ladki"]},
+    "ppf": {"strong": ["ppf", "public provident fund", "public provident"], "weak": ["tax saving"]},
+    "locker": {"strong": ["bank locker", "locker", "safe deposit", "tijori"], "weak": []},
+    "cheque book": {"strong": ["cheque book", "check book", "chequebook", "cheque"], "weak": []},
+    "recurring deposit": {"strong": ["recurring deposit", "monthly deposit"], "weak": ["rd", "masik"]},
+    "current account": {"strong": ["current account", "business account"], "weak": ["overdraft"]},
+    "net banking": {"strong": ["net banking", "internet banking", "online banking", "mobile banking"], "weak": []},
+    "interest rate": {"strong": ["interest rate", "byaj dar"], "weak": ["byaj", "faida"]},
+    "complaint": {"strong": ["complaint", "shikayat", "grievance"], "weak": []},
+    "balance": {"strong": ["check balance", "account balance", "balance enquiry"], "weak": ["balance", "kitna", "bakiya"]},
+    "loan eligibility": {"strong": ["loan eligibility", "loan eligible"], "weak": ["eligibility", "eligible", "qualify"]},
+    "pm vishwakarma": {"strong": ["vishwakarma", "pm vishwakarma"], "weak": ["artisan", "karigar"]},
+    "atal pension": {"strong": ["atal pension", "pension yojana"], "weak": ["pension", "retirement"]},
+    "kisan credit card": {"strong": ["kisan credit", "kisan", "kcc"], "weak": ["farmer", "kisaan", "agriculture"]},
+    "nri account": {"strong": ["nri account", "nri", "nre", "nro"], "weak": []},
+    "minimum balance": {"strong": ["minimum balance", "min balance", "nyuntam"], "weak": []},
 }
 
 def fuzzy_fast_path(query: str, lang: str) -> Optional[str]:
-    """Check fast-path cache using keyword matching for near-instant responses."""
-    q = query.lower().strip()
+    """Check fast-path cache using keyword matching for near-instant responses.
     
-    # 1. Direct substring match in cache keys
+    Uses two-tier matching:
+    - "strong" keywords: a single match is enough (these are specific multi-word phrases)
+    - "weak" keywords: need 2+ matches to trigger (these are generic single words)
+    """
+    q = query.lower().strip()
+    q_words = set(q.replace(',', ' ').replace('.', ' ').replace('?', ' ').replace('!', ' ').split())
+    
+    # 1. Direct exact match in cache keys (very specific, safe)
     for key in FAST_PATH_CACHE:
         if key in q:
             return FAST_PATH_CACHE[key].get(lang) or FAST_PATH_CACHE[key].get("en")
     
-    # 2. Keyword-based fuzzy match
-    for key, keywords in FAST_PATH_KEYWORDS.items():
-        if any(kw in q for kw in keywords):
+    # 2. Two-tier keyword match
+    for key, kw_dict in FAST_PATH_KEYWORDS.items():
+        strong_kws = kw_dict.get("strong", [])
+        weak_kws = kw_dict.get("weak", [])
+        
+        # Strong match: any strong keyword phrase found in query → instant hit
+        if any(kw in q for kw in strong_kws):
+            lang_resp = FAST_PATH_CACHE.get(key, {})
+            return lang_resp.get(lang) or lang_resp.get("en")
+        
+        # Weak match: need at least 2 weak keyword word-level matches
+        weak_hits = sum(1 for kw in weak_kws if kw in q_words)
+        if weak_hits >= 2:
             lang_resp = FAST_PATH_CACHE.get(key, {})
             return lang_resp.get(lang) or lang_resp.get("en")
     
@@ -424,14 +443,15 @@ class VoicePipeline:
             llm_model   = "fallback"
             action      = "teller_alert"
             context_out = ""
-        elif rag_conf >= 0.60:
-            # ── RAG-Direct Fast Path (Zero LLM) ──
+        elif rag_conf >= 0.85:
+            # ── RAG-Direct Fast Path (Zero LLM) — only for VERY high similarity ──
             print(f"\033[92m[2/4] RAG-Direct Hit (sim={rag_conf:.2f}) ⚡ Skipping LLM!\033[0m")
-            best_doc = rag_result.documents[0] if rag_result.documents else user_text
-            sentences = best_doc.replace(". ", ".\n").split("\n")
-            bot_text = " ".join(s.strip() for s in sentences[:3] if s.strip())
+            # Use all retrieved docs for a more complete answer
+            all_docs_text = " ".join(doc.strip() for doc in rag_result.documents if doc.strip())
+            sentences = all_docs_text.replace(". ", ".\n").split("\n")
+            bot_text = " ".join(s.strip() for s in sentences[:5] if s.strip())
             if not bot_text:
-                bot_text = best_doc[:200]
+                bot_text = all_docs_text[:300]
             bot_text = bot_text.rstrip(".") + ". Is there anything else I can help you with?"
             action      = "answer"
             context_out = rag_result.context
