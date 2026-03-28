@@ -219,7 +219,24 @@ const API = (() => {
     } catch (_) {}
   }
 
-  return { sendAudio, sendText, resetSession, fetchStatus };
+  async function sendFeedback(userText, botText, feedback, lang) {
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_text: userText,
+          bot_text: botText,
+          feedback: feedback,
+          lang: lang || "en",
+        }),
+      });
+    } catch (err) {
+      console.error("Feedback error:", err);
+    }
+  }
+
+  return { sendAudio, sendText, resetSession, fetchStatus, sendFeedback };
 })();
 
 /* ─────────────────────────────────────────────────────────────
@@ -345,11 +362,27 @@ const UI = (() => {
       updateRAGVisualizer(text, conf, pct);
     }
 
+    // Feedback buttons for bot messages
+    let feedbackHTML = "";
+    if (role === "bot" && !isFallback) {
+      const msgId = "fb-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5);
+      feedbackHTML = `
+        <div class="feedback-row" id="${msgId}">
+          <button class="fb-btn fb-like" data-feedback="like" title="Good answer — cache this">
+            <span class="fb-icon">👍</span>
+          </button>
+          <button class="fb-btn fb-dislike" data-feedback="dislike" title="Bad answer">
+            <span class="fb-icon">👎</span>
+          </button>
+        </div>`;
+    }
+
     wrap.innerHTML = `
       <div class="avatar">${role === "user" ? "👤" : "🤖"}</div>
       <div>
         <div class="bubble">${escHtml(text)}</div>
         ${metaHTML}
+        ${feedbackHTML}
       </div>`;
 
     convo.appendChild(wrap);
@@ -593,4 +626,34 @@ document.addEventListener("DOMContentLoaded", () => {
   if (sendBtn) {
     sendBtn.addEventListener("click", window.submitTextQuery);
   }
+  // ── Feedback button handler ─────────────────────────────
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".fb-btn");
+    if (!btn) return;
+    const row = btn.closest(".feedback-row");
+    if (!row || row.dataset.sent) return;
+
+    const feedback = btn.dataset.feedback;
+    const msgWrap = btn.closest(".msg");
+    const bubble = msgWrap.querySelector(".bubble");
+    const botText = bubble ? bubble.textContent : "";
+
+    // Find the preceding user message
+    const allMsgs = Array.from(document.querySelectorAll(".msg"));
+    const idx = allMsgs.indexOf(msgWrap);
+    let userText = "";
+    for (let i = idx - 1; i >= 0; i--) {
+      if (allMsgs[i].classList.contains("user")) {
+        const ub = allMsgs[i].querySelector(".bubble");
+        userText = ub ? ub.textContent : "";
+        break;
+      }
+    }
+
+    API.sendFeedback(userText, botText, feedback, STATE.langOverride);
+    row.dataset.sent = "1";
+    row.innerHTML = feedback === "like"
+      ? '<span class="fb-done fb-done-like">✅ Cached for future use!</span>'
+      : '<span class="fb-done fb-done-dislike">Noted, thanks for feedback</span>';
+  });
 });

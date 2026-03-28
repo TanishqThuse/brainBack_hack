@@ -220,6 +220,30 @@ body {
 .conf-med { background: rgba(242,161,21,0.14); color: var(--gold); }
 .conf-lo  { background: rgba(255,68,68,0.14);  color: var(--red); }
 
+/* Feedback buttons (like/dislike) */
+.feedback-row {
+  margin-top: 6px; display: flex; gap: 6px; align-items: center;
+}
+.fb-btn {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 4px 10px; cursor: pointer;
+  font-size: 14px; display: flex; align-items: center; gap: 4px;
+  transition: all 0.2s ease; color: var(--muted); font-family: var(--font);
+}
+.fb-btn:hover {
+  border-color: rgba(0,207,238,0.4); background: rgba(0,207,238,0.08);
+  transform: scale(1.08);
+}
+.fb-like:hover { border-color: rgba(0,222,112,0.4); background: rgba(0,222,112,0.08); }
+.fb-dislike:hover { border-color: rgba(255,68,68,0.3); background: rgba(255,68,68,0.06); }
+.fb-icon { font-size: 14px; line-height: 1; }
+.fb-done {
+  font-size: 11px; padding: 3px 10px; border-radius: 6px;
+  animation: msg-in 0.25s ease;
+}
+.fb-done-like { color: var(--green); background: rgba(0,222,112,0.08); }
+.fb-done-dislike { color: var(--muted); background: rgba(255,255,255,0.04); }
+
 /* Empty state */
 .empty-state {
   flex: 1; display: flex; flex-direction: column;
