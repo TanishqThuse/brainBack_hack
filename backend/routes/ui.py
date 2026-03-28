@@ -14,10 +14,10 @@ def index():
     return render_template("index.html")
 
 
-@ui_bp.route("/sbi")
-def sbi_clone():
-    """Serves the SBI landing page clone."""
-    return render_template("sbi_clone.html")
+@ui_bp.route("/nexus")
+def nexus_clone():
+    """Serves the Nexus Bank landing page clone."""
+    return render_template("nexus.html")
 
 
 @ui_bp.route("/widget")

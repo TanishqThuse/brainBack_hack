@@ -19,7 +19,7 @@ class Settings:
     WHISPER_DEVICE   = "cpu"       # cpu | cuda
     WHISPER_COMPUTE  = "int8"      # int8 | float16 | float32
     WHISPER_LANGUAGE = None         # None = auto-detect (enables Hindi, Marathi, English)
-    WHISPER_BEAM     = 3           # Reduced from 5 for faster inference
+    WHISPER_BEAM     = 1           # Reduced to 1 for massive CPU speedup (Greedy decoding)
     WHISPER_VAD      = True        # Re-enabled: filters noise/silence hallucinations
     WHISPER_PROMPT   = (
         "Bank account, savings account, current account, fixed deposit, FD, "
