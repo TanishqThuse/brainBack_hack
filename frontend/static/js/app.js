@@ -283,6 +283,15 @@ const ResponseHandler = (() => {
       UI.showTellerAlert(data.bot_text);
     }
 
+    const showPromptLater = () => {
+      if (data.action !== "teller_alert" && data.action !== "no_speech") {
+        clearTimeout(STATE.exitPromptTimer);
+        STATE.exitPromptTimer = setTimeout(() => {
+          document.getElementById('exit-prompt').classList.add('visible');
+        }, 5000);
+      }
+    };
+
     // Play TTS audio
     if (data.audio_b64) {
       const fmt = data.audio_format || "wav";
@@ -302,6 +311,8 @@ const ResponseHandler = (() => {
       if (matchVoice) utterance.voice = matchVoice;
 
       window.speechSynthesis.speak(utterance);
+    } else {
+      showPromptLater();
     }
 
     // Update debug panel
@@ -493,8 +504,38 @@ const StatusBar = (() => {
    8. PUBLIC EVENT HANDLERS (called from HTML onclick)
    ───────────────────────────────────────────────────────────── */
 
+window.startSession = function(lang) {
+  STATE.sessionId = crypto.randomUUID();
+  STATE.langOverride = lang;
+  STATE.turns = 0;
+  
+  document.getElementById('welcome-overlay').style.display = 'none';
+  document.getElementById('main-ui').style.display = 'flex';
+  
+  const modes = [
+    { id: "auto", label: "🌐 Auto-Detect" },
+    { id: "hi",   label: "🇮🇳 Hindi Only" },
+    { id: "en",   label: "🇬🇧 English Only" }
+  ];
+  const selectedMode = modes.find(m => m.id === lang) || modes[0];
+  document.getElementById("lang-badge").textContent = selectedMode.label;
+  
+  // Optional: prompt the user to speak
+  UI.addMessage("bot", lang === 'hi' ? "नमस्ते! मैं आपकी कैसे मदद कर सकता हूँ?" : "Hello! How can I help you?", null, false);
+};
+
+window.endSession = async function() {
+  await window.resetSession();
+};
+
+window.hideExitPrompt = function() {
+  document.getElementById('exit-prompt').classList.remove('visible');
+  clearTimeout(STATE.exitPromptTimer);
+};
+
 window.toggleMic = function () {
   if (STATE.processing) return;
+  window.hideExitPrompt();
   STATE.recording ? Recorder.stop() : Recorder.start();
 };
 
@@ -511,6 +552,7 @@ window.toggleLanguageOverride = function () {
 };
 
 window.askSample = function (text) {
+  window.hideExitPrompt();
   // Show user message immediately, then query
   UI.addMessage("user", text, null, false);
   API.sendText(text);
@@ -522,6 +564,7 @@ window.submitTextQuery = function () {
   const text = inputEl.value.trim();
   if (!text) return;
 
+  window.hideExitPrompt();
   inputEl.value = "";
   // Show user message immediately, then query
   UI.addMessage("user", text, null, false);
