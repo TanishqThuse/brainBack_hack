@@ -303,13 +303,28 @@ const ResponseHandler = (() => {
     } else if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(data.bot_text);
-      const targetLang = data.lang === "hi" ? "hi" : "en";
-      utterance.lang = targetLang === "hi" ? "hi-IN" : "en-IN";
-      utterance.rate = 0.95;
 
-      // Try to find the best matching voice for the language
+      // Map backend lang codes → BCP-47 locales for browser SpeechSynthesis
+      const LANG_MAP = {
+        "hi": "hi-IN",  // Hindi
+        "mr": "mr-IN",  // Marathi
+        "gu": "gu-IN",  // Gujarati
+        "ta": "ta-IN",  // Tamil
+        "te": "te-IN",  // Telugu
+        "bn": "bn-IN",  // Bengali
+        "pa": "pa-IN",  // Punjabi
+        "ur": "ur-PK",  // Urdu
+        "en": "en-IN",  // English (India accent)
+      };
+      const bcp47 = LANG_MAP[data.lang] || "en-IN";
+      utterance.lang = bcp47;
+      utterance.rate = 0.92;
+
+      // Find the best matching installed voice for this language
       const voices = window.speechSynthesis.getVoices();
-      const matchVoice = voices.find((v) => v.lang.startsWith(targetLang));
+      const langPrefix = (data.lang || "en").substring(0, 2);
+      const matchVoice = voices.find((v) => v.lang.startsWith(langPrefix))
+                      || voices.find((v) => v.lang.startsWith("en"));
       if (matchVoice) utterance.voice = matchVoice;
 
       window.speechSynthesis.speak(utterance);
@@ -518,7 +533,9 @@ const StatusBar = (() => {
 
 window.startSession = function(lang) {
   STATE.sessionId = crypto.randomUUID();
-  STATE.langOverride = lang;
+  // Always use auto-detect — Whisper detects the language from the user's speech.
+  // The 'lang' button in the welcome screen only sets the UI greeting language.
+  STATE.langOverride = "auto";
   STATE.turns = 0;
   
   const overlay = document.getElementById('welcome-overlay');
@@ -526,16 +543,11 @@ window.startSession = function(lang) {
   if (overlay) overlay.style.display = 'none';
   if (mainUi) mainUi.style.display = 'flex';
   
-  const modes = [
-    { id: "auto", label: "🌐 Auto-Detect" },
-    { id: "hi",   label: "🇮🇳 Hindi Only" },
-    { id: "en",   label: "🇬🇧 English Only" }
-  ];
-  const selectedMode = modes.find(m => m.id === lang) || modes[0];
-  document.getElementById("lang-badge").textContent = selectedMode.label;
+  // Update badge to show Auto-Detect is always active
+  document.getElementById("lang-badge").textContent = "🌐 Auto-Detect";
   
-  // Optional: prompt the user to speak
-  UI.addMessage("bot", lang === 'hi' ? "नमस्ते! मैं आपकी कैसे मदद कर सकता हूँ?" : "Hello! How can I help you?", null, false);
+  // Greet in both Hindi & English so any user feels welcome
+  UI.addMessage("bot", "नमस्ते! / Hello! How can I help you today?", null, false);
 };
 
 window.endSession = async function() {
@@ -571,6 +583,11 @@ window.askSample = function (text) {
   // Show user message immediately, then query
   UI.addMessage("user", text, null, false);
   API.sendText(text);
+};
+
+window.toggleTheme = function() {
+  document.body.classList.toggle('light-mode');
+  window.parent.postMessage('toggle-theme', '*');
 };
 
 window.submitTextQuery = function () {

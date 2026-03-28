@@ -3,15 +3,15 @@
  * Injects a floating chat bubble and an iframe for the BankBot.
  * Drop in: <script src="/static/js/widget-loader.js"></script>
  */
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   /* --- Config --- */
-  const WIDGET_URL    = '/widget';
-  const BUBBLE_SIZE   = 60;  // px
-  const MARGIN        = 24;  // px from edge
-  const WIDGET_W      = 380; // px
-  const WIDGET_H_MAX  = 600; // px (max, clamped by viewport)
+  const WIDGET_URL = "/widget";
+  const BUBBLE_SIZE = 60; // px
+  const MARGIN = 24; // px from edge
+  const WIDGET_W = 380; // px
+  const WIDGET_H_MAX = 600; // px (max, clamped by viewport)
 
   /* --- Compute safe widget height --- */
   function getWidgetHeight() {
@@ -21,7 +21,7 @@
   }
 
   /* --- Inject CSS --- */
-  const style = document.createElement('style');
+  const style = document.createElement("style");
   style.innerHTML = `
     #bb-bubble {
       position: fixed;
@@ -105,49 +105,51 @@
   document.head.appendChild(style);
 
   /* --- Bubble --- */
-  const bubble = document.createElement('div');
-  bubble.id = 'bb-bubble';
-  bubble.title = 'Chat with BankBot AI';
+  const bubble = document.createElement("div");
+  bubble.id = "bb-bubble";
+  bubble.title = "Chat with BankBot AI";
   bubble.innerHTML = '🤖<span id="bb-badge">1</span>';
   document.body.appendChild(bubble);
 
   /* --- Widget container + iframe --- */
-  const container = document.createElement('div');
-  container.id = 'bb-container';
+  const container = document.createElement("div");
+  container.id = "bb-container";
 
-  const iframe = document.createElement('iframe');
-  iframe.id = 'bb-iframe';
+  const iframe = document.createElement("iframe");
+  iframe.id = "bb-iframe";
   iframe.src = WIDGET_URL;
-  iframe.allow = 'microphone';  // ← CRITICAL: allows mic access in iframe
+  iframe.allow = "microphone"; // ← CRITICAL: allows mic access in iframe
 
   container.appendChild(iframe);
   document.body.appendChild(container);
 
   /* --- Set height dynamically --- */
   function updateWidgetHeight() {
-    container.style.height = getWidgetHeight() + 'px';
-    iframe.style.height = getWidgetHeight() + 'px';
+    container.style.height = getWidgetHeight() + "px";
+    iframe.style.height = getWidgetHeight() + "px";
   }
   updateWidgetHeight();
-  window.addEventListener('resize', updateWidgetHeight);
+  window.addEventListener("resize", updateWidgetHeight);
 
   /* --- Toggle --- */
   let isOpen = false;
-  bubble.addEventListener('click', () => {
+  bubble.addEventListener("click", () => {
     isOpen = !isOpen;
-    bubble.classList.toggle('open', isOpen);
-    container.classList.toggle('open', isOpen);
+    bubble.classList.toggle("open", isOpen);
+    container.classList.toggle("open", isOpen);
     // Remove notification badge once opened
-    const badge = document.getElementById('bb-badge');
-    if (badge && isOpen) badge.style.display = 'none';
+    const badge = document.getElementById("bb-badge");
+    if (badge && isOpen) badge.style.display = "none";
   });
 
-  /* --- Listen for close msg from widget iframe --- */
-  window.addEventListener('message', (e) => {
-    if (e.data === 'close-widget') {
+  /* --- Listen for close/theme msgs from widget iframe --- */
+  window.addEventListener("message", (e) => {
+    if (e.data === "close-widget") {
       isOpen = false;
-      bubble.classList.remove('open');
-      container.classList.remove('open');
+      bubble.classList.remove("open");
+      container.classList.remove("open");
+    } else if (e.data === "toggle-theme") {
+      container.classList.toggle("light-mode");
     }
   });
 })();
